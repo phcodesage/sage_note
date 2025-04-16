@@ -1,1 +1,13 @@
 /build
+
+# Ignore Android Studio specific files
+.idea
+
+# Ignore Gradle specific files
+.gradle
+
+# Ignore Keystore files
+*.keystore
+
+# Ignore ProGuard files
+proguard-rules.pro

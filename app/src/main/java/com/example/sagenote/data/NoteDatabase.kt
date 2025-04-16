@@ -6,9 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.sagenote.util.DateTimeConverters
+import com.example.sagenote.util.NoteTypeConverters
 
-@Database(entities = [Note::class], version = 2, exportSchema = false)
-@TypeConverters(DateTimeConverters::class)
+@Database(entities = [Note::class], version = 3, exportSchema = false)
+@TypeConverters(DateTimeConverters::class, NoteTypeConverters::class)
 abstract class NoteDatabase : RoomDatabase() {
     
     abstract fun noteDao(): NoteDao
@@ -24,7 +25,7 @@ abstract class NoteDatabase : RoomDatabase() {
                     NoteDatabase::class.java,
                     "note_database"
                 )
-                .fallbackToDestructiveMigration() 
+                .fallbackToDestructiveMigration() // This will recreate the database if the version changes
                 .build()
                 INSTANCE = instance
                 instance

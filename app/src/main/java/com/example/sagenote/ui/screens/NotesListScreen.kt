@@ -17,10 +17,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +43,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.sagenote.data.Note
+import com.example.sagenote.data.NoteType
+import com.example.sagenote.ui.components.MultiFloatingActionButton
 import com.example.sagenote.ui.components.NoteItem
 import com.example.sagenote.viewmodel.NoteViewModel
 
@@ -53,7 +53,7 @@ import com.example.sagenote.viewmodel.NoteViewModel
 fun NotesListScreen(
     noteViewModel: NoteViewModel,
     onNoteClick: (Long) -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: (NoteType) -> Unit
 ) {
     val notes by noteViewModel.allNotes.collectAsState()
     val searchResults by noteViewModel.searchResults.collectAsState()
@@ -89,15 +89,11 @@ fun NotesListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddClick,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add note"
-                )
-            }
+            MultiFloatingActionButton(
+                onFabItemClicked = { noteType ->
+                    onAddClick(noteType)
+                }
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
