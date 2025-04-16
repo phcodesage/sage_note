@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -162,17 +165,88 @@ fun NotesListScreen(
                         )
                     }
                 } else if (!isSearchActive) {
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
-                        contentPadding = PaddingValues(8.dp),
-                        modifier = Modifier.fillMaxSize()
+                    // Filter notes into pinned and unpinned
+                    val pinnedNotes = notes.filter { it.isPinned }
+                    val unpinnedNotes = notes.filter { !it.isPinned }
+                    
+                    // Use a different approach to avoid nested scrollable containers
+                    // and ensure the Others section fills the bottom of the screen
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp)
                     ) {
-                        items(notes) { note ->
-                            NoteItem(
-                                note = note,
-                                onClick = { onNoteClick(note.id) },
-                                onPinClick = { noteViewModel.togglePinStatus(note) }
-                            )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            // Pinned Notes Section
+                            if (pinnedNotes.isNotEmpty()) {
+                                Text(
+                                    text = "Pinned",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 8.dp, top = 16.dp, bottom = 8.dp)
+                                )
+                                
+                                // Calculate a reasonable height based on number of notes and screen size
+                                val pinnedGridHeight = (pinnedNotes.size / 2 + pinnedNotes.size % 2) * 140
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(pinnedGridHeight.coerceAtLeast(140).dp)
+                                ) {
+                                    LazyVerticalStaggeredGrid(
+                                        columns = StaggeredGridCells.Fixed(2),
+                                        contentPadding = PaddingValues(bottom = 16.dp),
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        items(pinnedNotes) { note ->
+                                            NoteItem(
+                                                note = note,
+                                                onClick = { onNoteClick(note.id) },
+                                                onPinClick = { noteViewModel.togglePinStatus(note) }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Unpinned Notes Section
+                            if (unpinnedNotes.isNotEmpty()) {
+                                Text(
+                                    text = "Others",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(start = 8.dp, top = 16.dp, bottom = 8.dp)
+                                )
+                                
+                                // Calculate height to fill remaining space
+                                // We use a larger multiplier to ensure it extends to bottom
+                                val unpinnedGridHeight = (unpinnedNotes.size / 2 + unpinnedNotes.size % 2) * 140
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(unpinnedGridHeight.coerceAtLeast(500).dp)
+                                ) {
+                                    LazyVerticalStaggeredGrid(
+                                        columns = StaggeredGridCells.Fixed(2),
+                                        contentPadding = PaddingValues(bottom = 80.dp), // Extra padding at bottom for FAB
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        items(unpinnedNotes) { note ->
+                                            NoteItem(
+                                                note = note,
+                                                onClick = { onNoteClick(note.id) },
+                                                onPinClick = { noteViewModel.togglePinStatus(note) }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
