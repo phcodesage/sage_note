@@ -91,15 +91,18 @@ fun AddEditNoteScreen(
     var isPinned by rememberSaveable { mutableStateOf(note?.isPinned ?: false) }
     var showColorPicker by remember { mutableStateOf(false) }
     
-    // Derive text color from background color, considering dark theme
-    val textColor by remember(color, isDarkTheme) { 
-        derivedStateOf { 
-            if (isDarkTheme && Color(color).red < 0.5f) {
-                Color.White
-            } else {
-                Color(getTextColorForBackground(color))
-            }
-        }
+    // For app bar, always use white text in dark mode
+    val appBarTextColor = if (isDarkTheme) {
+        Color.White
+    } else {
+        Color(getTextColorForBackground(color))
+    }
+    
+    // For content, use the calculated text color based on background
+    val contentTextColor = if (isDarkTheme && Color(color).red < 0.5f) {
+        Color.White
+    } else {
+        Color(getTextColorForBackground(color))
     }
     
     // Available colors for notes
@@ -130,7 +133,7 @@ fun AddEditNoteScreen(
                 title = { 
                     Text(
                         text = if (noteId == null) "Create Note" else "Edit Note",
-                        color = textColor
+                        color = appBarTextColor
                     ) 
                 },
                 navigationIcon = {
@@ -138,7 +141,7 @@ fun AddEditNoteScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = textColor
+                            tint = appBarTextColor
                         )
                     }
                 },
@@ -152,7 +155,7 @@ fun AddEditNoteScreen(
                             Icon(
                                 imageVector = Icons.Default.PushPin,
                                 contentDescription = if (isPinned) "Unpin note" else "Pin note",
-                                tint = if (isPinned) MaterialTheme.colorScheme.primary else textColor.copy(alpha = 0.5f)
+                                tint = if (isPinned) MaterialTheme.colorScheme.primary else appBarTextColor.copy(alpha = 0.5f)
                             )
                         }
                         
@@ -230,15 +233,15 @@ fun AddEditNoteScreen(
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Title", color = textColor.copy(alpha = 0.7f)) },
+                label = { Text("Title", color = contentTextColor.copy(alpha = 0.7f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    focusedTextColor = textColor,
-                    unfocusedTextColor = textColor,
-                    cursorColor = textColor,
-                    focusedIndicatorColor = textColor,
-                    unfocusedIndicatorColor = textColor.copy(alpha = 0.5f),
+                    focusedTextColor = contentTextColor,
+                    unfocusedTextColor = contentTextColor,
+                    cursorColor = contentTextColor,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent
                 )
@@ -250,17 +253,17 @@ fun AddEditNoteScreen(
             OutlinedTextField(
                 value = content,
                 onValueChange = { content = it },
-                label = { Text("Content", color = textColor.copy(alpha = 0.7f)) },
+                label = { Text("Content", color = contentTextColor.copy(alpha = 0.7f)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .weight(1f), // Make content field expand to fill available space
                 singleLine = false,
                 colors = TextFieldDefaults.colors(
-                    focusedTextColor = textColor,
-                    unfocusedTextColor = textColor,
-                    cursorColor = textColor,
-                    focusedIndicatorColor = textColor,
-                    unfocusedIndicatorColor = textColor.copy(alpha = 0.5f),
+                    focusedTextColor = contentTextColor,
+                    unfocusedTextColor = contentTextColor,
+                    cursorColor = contentTextColor,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent
                 )
@@ -273,7 +276,7 @@ fun AddEditNoteScreen(
                 text = "Note Color",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 8.dp),
-                color = textColor
+                color = contentTextColor
             )
             
             Box(
@@ -283,7 +286,7 @@ fun AddEditNoteScreen(
                     .background(Color(color))
                     .border(
                         width = 1.dp,
-                        color = textColor.copy(alpha = 0.2f),
+                        color = contentTextColor.copy(alpha = 0.2f),
                         shape = CircleShape
                     )
                     .clickable { 
