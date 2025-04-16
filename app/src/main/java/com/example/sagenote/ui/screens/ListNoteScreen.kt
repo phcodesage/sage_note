@@ -63,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -84,6 +85,7 @@ fun ListNoteScreen(
     val errorMessage by noteViewModel.errorMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val isDarkTheme = isSystemInDarkTheme()
     
@@ -109,15 +111,18 @@ fun ListNoteScreen(
         }
     }
     
-    // Derive text color from background color, considering dark theme
-    val textColor by remember(color, isDarkTheme) {
-        derivedStateOf {
-            if (isDarkTheme && Color(color).red < 0.5f) {
-                Color.White
-            } else {
-                Color(getTextColorForBackground(color))
-            }
-        }
+    // For app bar, always use white text in dark mode
+    val appBarTextColor = if (isDarkTheme) {
+        Color.White
+    } else {
+        Color(getTextColorForBackground(color))
+    }
+    
+    // For content, use the calculated text color based on background
+    val contentTextColor = if (isDarkTheme && Color(color).red < 0.5f) {
+        Color.White
+    } else {
+        Color(getTextColorForBackground(color))
     }
     
     // Available colors for notes
@@ -148,7 +153,7 @@ fun ListNoteScreen(
                 title = {
                     Text(
                         text = if (noteId == null) "Create List" else "Edit List",
-                        color = textColor
+                        color = appBarTextColor
                     )
                 },
                 navigationIcon = {
@@ -156,7 +161,7 @@ fun ListNoteScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = textColor
+                            tint = appBarTextColor
                         )
                     }
                 },
@@ -169,7 +174,7 @@ fun ListNoteScreen(
                         Icon(
                             imageVector = Icons.Default.PushPin,
                             contentDescription = if (isPinned) "Unpin note" else "Pin note",
-                            tint = if (isPinned) MaterialTheme.colorScheme.primary else textColor.copy(alpha = 0.5f)
+                            tint = if (isPinned) MaterialTheme.colorScheme.primary else appBarTextColor.copy(alpha = 0.5f)
                         )
                     }
                     
@@ -254,15 +259,15 @@ fun ListNoteScreen(
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Title", color = textColor.copy(alpha = 0.7f)) },
+                label = { Text("Title", color = contentTextColor.copy(alpha = 0.7f)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    focusedTextColor = textColor,
-                    unfocusedTextColor = textColor,
-                    cursorColor = textColor,
-                    focusedIndicatorColor = textColor,
-                    unfocusedIndicatorColor = textColor.copy(alpha = 0.5f),
+                    focusedTextColor = contentTextColor,
+                    unfocusedTextColor = contentTextColor,
+                    cursorColor = contentTextColor,
+                    focusedIndicatorColor = contentTextColor,
+                    unfocusedIndicatorColor = contentTextColor.copy(alpha = 0.5f),
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent
                 )
@@ -275,7 +280,7 @@ fun ListNoteScreen(
                 text = "Note Color",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 8.dp),
-                color = textColor
+                color = contentTextColor
             )
             
             Box(
@@ -285,7 +290,7 @@ fun ListNoteScreen(
                     .background(Color(color))
                     .border(
                         width = 1.dp,
-                        color = textColor.copy(alpha = 0.2f),
+                        color = contentTextColor.copy(alpha = 0.2f),
                         shape = CircleShape
                     )
                     .clickable {
@@ -340,7 +345,7 @@ fun ListNoteScreen(
                 itemsIndexed(listItems) { index, item ->
                     ListItemRow(
                         item = item,
-                        textColor = textColor,
+                        textColor = contentTextColor,
                         onCheckedChange = { isChecked ->
                             listItems[index] = item.copy(isChecked = isChecked)
                         },
@@ -361,7 +366,7 @@ fun ListNoteScreen(
                 OutlinedTextField(
                     value = newItemText,
                     onValueChange = { newItemText = it },
-                    label = { Text("Add item", color = textColor.copy(alpha = 0.7f)) },
+                    label = { Text("Add item", color = contentTextColor.copy(alpha = 0.7f)) },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -375,11 +380,11 @@ fun ListNoteScreen(
                         }
                     ),
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = textColor,
-                        unfocusedTextColor = textColor,
-                        cursorColor = textColor,
-                        focusedIndicatorColor = textColor,
-                        unfocusedIndicatorColor = textColor.copy(alpha = 0.5f),
+                        focusedTextColor = contentTextColor,
+                        unfocusedTextColor = contentTextColor,
+                        cursorColor = contentTextColor,
+                        focusedIndicatorColor = contentTextColor,
+                        unfocusedIndicatorColor = contentTextColor.copy(alpha = 0.5f),
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent
                     )
@@ -397,7 +402,7 @@ fun ListNoteScreen(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add item",
-                        tint = textColor
+                        tint = contentTextColor
                     )
                 }
             }

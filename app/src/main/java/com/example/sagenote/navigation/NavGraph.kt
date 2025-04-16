@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.sagenote.util.AnimationUtils
 import com.example.sagenote.data.NoteType
 import com.example.sagenote.ui.screens.AddEditNoteScreen
 import com.example.sagenote.ui.screens.AudioNoteScreen
@@ -48,7 +49,13 @@ fun NavGraph(
         navController = navController,
         startDestination = Screen.NotesList.route
     ) {
-        composable(route = Screen.NotesList.route) {
+        composable(
+            route = Screen.NotesList.route,
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
+        ) {
             NotesListScreen(
                 noteViewModel = noteViewModel,
                 onNoteClick = { noteId ->
@@ -71,7 +78,11 @@ fun NavGraph(
                 navArgument("noteType") {
                     type = NavType.StringType
                 }
-            )
+            ),
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
         ) { backStackEntry ->
             val noteTypeStr = backStackEntry.arguments?.getString("noteType") ?: NoteType.TEXT.name
             val noteType = try {
@@ -94,7 +105,11 @@ fun NavGraph(
                 navArgument("noteId") {
                     type = NavType.LongType
                 }
-            )
+            ),
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
             AddEditNoteScreen(
@@ -110,7 +125,11 @@ fun NavGraph(
                 navArgument("noteId") {
                     type = NavType.LongType
                 }
-            )
+            ),
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
             NoteDetailScreen(
@@ -134,7 +153,11 @@ fun NavGraph(
                 navArgument("noteId") {
                     type = NavType.LongType
                 }
-            )
+            ),
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
             val isNewNote = noteId == -1L
@@ -152,7 +175,11 @@ fun NavGraph(
                 navArgument("noteId") {
                     type = NavType.LongType
                 }
-            )
+            ),
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
             val isNewNote = noteId == -1L
@@ -170,7 +197,11 @@ fun NavGraph(
                 navArgument("noteId") {
                     type = NavType.LongType
                 }
-            )
+            ),
+            enterTransition = AnimationUtils.enterTransition(),
+            exitTransition = AnimationUtils.exitTransition(),
+            popEnterTransition = AnimationUtils.popEnterTransition(),
+            popExitTransition = AnimationUtils.popExitTransition()
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
             val isNewNote = noteId == -1L

@@ -3,6 +3,7 @@ package com.example.sagenote.ui.screens
 import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +82,7 @@ fun NoteDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val isDarkTheme = isSystemInDarkTheme()
     
     // Find the note
     val note = allNotes.find { it.id == noteId }
@@ -144,10 +146,15 @@ fun NoteDetailScreen(
         return
     }
     
-    // Determine text color based on background color
-    val textColor by remember(note.color) {
-        derivedStateOf { Color(note.textColor) }
+    // For app bar, always use white text in dark mode
+    val appBarTextColor = if (isDarkTheme) {
+        Color.White
+    } else {
+        Color(note.textColor)
     }
+    
+    // For content, use the calculated text color based on background
+    val contentTextColor = Color(note.textColor)
     
     Scaffold(
         topBar = {
@@ -155,7 +162,7 @@ fun NoteDetailScreen(
                 title = { 
                     Text(
                         text = note.title,
-                        color = textColor
+                        color = appBarTextColor
                     ) 
                 },
                 navigationIcon = {
@@ -163,7 +170,7 @@ fun NoteDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = textColor
+                            tint = appBarTextColor
                         )
                     }
                 },
@@ -178,7 +185,7 @@ fun NoteDetailScreen(
                         Icon(
                             imageVector = Icons.Default.PushPin,
                             contentDescription = if (note.isPinned) "Unpin note" else "Pin note",
-                            tint = if (note.isPinned) MaterialTheme.colorScheme.primary else textColor.copy(alpha = 0.5f)
+                            tint = if (note.isPinned) MaterialTheme.colorScheme.primary else appBarTextColor.copy(alpha = 0.5f)
                         )
                     }
                     
@@ -230,7 +237,7 @@ fun NoteDetailScreen(
                         Text(
                             text = note.content,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = textColor
+                            color = contentTextColor
                         )
                     }
                 }
@@ -244,7 +251,7 @@ fun NoteDetailScreen(
                         Text(
                             text = "Checklist",
                             style = MaterialTheme.typography.titleMedium,
-                            color = textColor,
+                            color = contentTextColor,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -253,22 +260,42 @@ fun NoteDetailScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(note.listItems) { item ->
+                                val updatedListItems = note.listItems.toMutableList()
+                                val index = updatedListItems.indexOf(item)
+                                
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
+                                        .padding(vertical = 8.dp)
+                                        .clickable {
+                                            // Toggle the checkbox when clicked
+                                            if (index != -1) {
+                                                updatedListItems[index] = item.copy(isChecked = !item.isChecked)
+                                                // Update the note with the new list items
+                                                val updatedNote = note.copy(listItems = updatedListItems)
+                                                noteViewModel.updateNote(updatedNote)
+                                            }
+                                        },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Checkbox(
                                         checked = item.isChecked,
-                                        onCheckedChange = null, // Read-only in detail view
+                                        onCheckedChange = { isChecked ->
+                                            // Update the list item when checkbox is clicked
+                                            if (index != -1) {
+                                                updatedListItems[index] = item.copy(isChecked = isChecked)
+                                                // Update the note with the new list items
+                                                val updatedNote = note.copy(listItems = updatedListItems)
+                                                noteViewModel.updateNote(updatedNote)
+                                            }
+                                        },
                                         modifier = Modifier.padding(end = 8.dp)
                                     )
                                     
                                     Text(
                                         text = item.text,
                                         style = MaterialTheme.typography.bodyLarge,
-                                        color = textColor
+                                        color = contentTextColor
                                     )
                                 }
                             }
@@ -315,7 +342,7 @@ fun NoteDetailScreen(
                             Text(
                                 text = "No drawing available",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = textColor
+                                color = contentTextColor
                             )
                         }
                     }
@@ -436,7 +463,7 @@ fun NoteDetailScreen(
                                 imageVector = Icons.Default.Mic,
                                 contentDescription = "Audio",
                                 modifier = Modifier.size(64.dp),
-                                tint = textColor.copy(alpha = 0.5f)
+                                tint = appBarTextColor.copy(alpha = 0.5f)
                             )
                             
                             Spacer(modifier = Modifier.height(16.dp))
@@ -444,7 +471,7 @@ fun NoteDetailScreen(
                             Text(
                                 text = "No audio recording available",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = textColor
+                                color = contentTextColor
                             )
                         }
                     }
