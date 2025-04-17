@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
@@ -247,6 +248,11 @@ fun NotesListScreen(
                         }
                     }
                 )
+            } else if (isSearchActive) {
+                // Empty top bar when search is active (SearchBar is shown below)
+                TopAppBar(
+                    title = { /* No title in search mode */ }
+                )
             } else {
                 // Normal top bar
                 TopAppBar(
@@ -338,6 +344,11 @@ fun NotesListScreen(
                         active = isSearchActive,
                         onActiveChange = { isSearchActive = it },
                         placeholder = { Text("Search notes...") },
+                        leadingIcon = {
+                            IconButton(onClick = { isSearchActive = false }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back from search")
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)

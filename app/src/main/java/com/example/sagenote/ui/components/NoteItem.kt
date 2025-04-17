@@ -1,6 +1,8 @@
 package com.example.sagenote.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -49,10 +51,23 @@ fun NoteItem(
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
+    // Animate background color with a white flash effect when selected
     val backgroundColor by animateColorAsState(
-        targetValue = Color(note.color),
+        targetValue = if (isSelected) {
+            // Slightly lighter version of the note color for selection effect
+            Color(note.color).copy(alpha = 0.9f)
+        } else {
+            Color(note.color)
+        },
         animationSpec = tween(durationMillis = 300),
         label = "ColorAnimation"
+    )
+    
+    // Animate border width for selection
+    val borderWidth by animateDpAsState(
+        targetValue = if (isSelected) 3.dp else 0.dp,
+        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+        label = "BorderAnimation"
     )
     
     val textColor = Color(note.textColor)
@@ -62,16 +77,10 @@ fun NoteItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .then(
-                if (isSelected) {
-                    Modifier.border(
-                        width = 2.dp,
-                        color = borderColor,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                } else {
-                    Modifier
-                }
+            .border(
+                width = borderWidth,
+                color = borderColor,
+                shape = RoundedCornerShape(8.dp)
             )
             .combinedClickable(
                 onClick = { onClick() },
