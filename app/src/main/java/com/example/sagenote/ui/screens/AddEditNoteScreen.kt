@@ -59,6 +59,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.example.sagenote.data.Note
 import com.example.sagenote.data.NoteType
+import com.example.sagenote.ui.theme.*
 import com.example.sagenote.util.getTextColorForBackground
 import com.example.sagenote.viewmodel.NoteViewModel
 import kotlinx.coroutines.launch
@@ -105,18 +106,18 @@ fun AddEditNoteScreen(
         Color(getTextColorForBackground(color))
     }
     
-    // Available colors for notes
+    // Available colors for notes - using softer colors
     val noteColors = listOf(
-        Color(0xFFFFFFFF).toArgb(), // White
-        Color(0xFFF28B82).toArgb(), // Light Red
-        Color(0xFFFBBC04).toArgb(), // Yellow
-        Color(0xFFFFF475).toArgb(), // Light Yellow
-        Color(0xFFCBFF90).toArgb(), // Light Green
-        Color(0xFFA7FFEB).toArgb(), // Teal
-        Color(0xFFCBF0F8).toArgb(), // Light Blue
-        Color(0xFFAECBFA).toArgb(), // Blue
-        Color(0xFFD7AEFB).toArgb(), // Purple
-        Color(0xFFFDCFE8).toArgb()  // Pink
+        Color(0xFFFFFFF0).toArgb(),  // Soft white
+        Color(0xFFFFCCBC).toArgb(),  // Soft red
+        Color(0xFFFFE0B2).toArgb(),  // Soft yellow
+        Color(0xFFFFF9C4).toArgb(),  // Very soft yellow
+        Color(0xFFC8E6C9).toArgb(),  // Soft green
+        Color(0xFFB2DFDB).toArgb(),  // Soft teal
+        Color(0xFFBBDEFB).toArgb(),  // Soft light blue
+        Color(0xFF90CAF9).toArgb(),  // Soft blue
+        Color(0xFFD1C4E9).toArgb(),  // Soft purple
+        Color(0xFFF8BBD0).toArgb()   // Soft pink
     )
     
     // Show error message if any
@@ -124,6 +125,24 @@ fun AddEditNoteScreen(
         errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             noteViewModel.clearError()
+        }
+    }
+    
+    // Auto-save functionality
+    LaunchedEffect(title, content, color, isPinned) {
+        // Only auto-save if we're editing an existing note and have valid data
+        if (noteId != null && title.isNotBlank()) {
+            // Debounce the auto-save to avoid too many database operations
+            kotlinx.coroutines.delay(1000) // Wait 1 second after typing stops
+            note?.let {
+                val updatedNote = it.copy(
+                    title = title,
+                    content = content,
+                    color = color,
+                    isPinned = isPinned
+                )
+                noteViewModel.updateNote(updatedNote)
+            }
         }
     }
     
@@ -146,19 +165,63 @@ fun AddEditNoteScreen(
                     }
                 },
                 actions = {
-                    if (noteId != null) {
-                        IconButton(
-                            onClick = {
-                                isPinned = !isPinned
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PushPin,
-                                contentDescription = if (isPinned) "Unpin note" else "Pin note",
-                                tint = if (isPinned) MaterialTheme.colorScheme.primary else appBarTextColor.copy(alpha = 0.5f)
-                            )
+                    // Pin button
+                    IconButton(
+                        onClick = {
+                            isPinned = !isPinned
                         }
-                        
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PushPin,
+                            contentDescription = if (isPinned) "Unpin note" else "Pin note",
+                            tint = if (isPinned) MaterialTheme.colorScheme.primary else appBarTextColor.copy(alpha = 0.5f)
+                        )
+                    }
+                    
+                    // Save button in top-right corner
+                    IconButton(
+                        onClick = {
+                            if (title.isBlank()) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Title cannot be empty")
+                                }
+                                return@IconButton
+                            }
+                            
+                            if (noteId == null) {
+                                // Create new note
+                                val newNote = Note(
+                                    title = title,
+                                    content = content,
+                                    color = color,
+                                    isPinned = isPinned,
+                                    type = noteType
+                                )
+                                noteViewModel.insertNote(newNote)
+                            } else {
+                                // Update existing note
+                                note?.let {
+                                    val updatedNote = it.copy(
+                                        title = title,
+                                        content = content,
+                                        color = color,
+                                        isPinned = isPinned
+                                    )
+                                    noteViewModel.updateNote(updatedNote)
+                                }
+                            }
+                            onNavigateBack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Save note",
+                            tint = appBarTextColor
+                        )
+                    }
+                    
+                    // Delete button (only for existing notes)
+                    if (noteId != null) {
                         IconButton(
                             onClick = {
                                 coroutineScope.launch {
@@ -177,48 +240,7 @@ fun AddEditNoteScreen(
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (title.isBlank()) {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Title cannot be empty")
-                        }
-                        return@FloatingActionButton
-                    }
-                    
-                    if (noteId == null) {
-                        // Create new note
-                        val newNote = Note(
-                            title = title,
-                            content = content,
-                            color = color,
-                            isPinned = isPinned,
-                            type = noteType
-                        )
-                        noteViewModel.insertNote(newNote)
-                    } else {
-                        // Update existing note
-                        note?.let {
-                            val updatedNote = it.copy(
-                                title = title,
-                                content = content,
-                                color = color,
-                                isPinned = isPinned
-                            )
-                            noteViewModel.updateNote(updatedNote)
-                        }
-                    }
-                    onNavigateBack()
-                },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Save note"
-                )
-            }
-        },
+        // Removed floating action button as save is now in the top bar
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color(color)
     ) { paddingValues ->

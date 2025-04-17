@@ -57,18 +57,18 @@ fun NavGraph(
             popExitTransition = AnimationUtils.popExitTransition()
         ) {
             NotesListScreen(
-                noteViewModel = noteViewModel,
                 onNoteClick = { noteId ->
                     navController.navigate(Screen.NoteDetail.createRoute(noteId))
                 },
-                onAddClick = { noteType ->
+                onCreateNoteClick = { noteType ->
                     when (noteType) {
                         NoteType.TEXT -> navController.navigate(Screen.AddNote.createRoute(NoteType.TEXT))
                         NoteType.DRAWING -> navController.navigate(Screen.DrawingNote.createRoute(null))
                         NoteType.LIST -> navController.navigate(Screen.ListNote.createRoute(null))
                         NoteType.AUDIO -> navController.navigate(Screen.AudioNote.createRoute(null))
                     }
-                }
+                },
+                noteViewModel = noteViewModel
             )
         }
         
